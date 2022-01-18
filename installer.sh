@@ -11,8 +11,10 @@ INSTALLED_EXES=()
 
 function waUsage() {
 	echo 'Usage:
-  ./installer.sh --user    # Install everything in ${HOME}
-  ./installer.sh --system  # Install everything in /usr'
+  ./installer.sh --user                # Configure applications for the current user(${HOME})
+	./installer.sh --system              # Configure applications for the entire system (/usr)
+	./installer.sh --user --uninstall    # Remove all configured applications for the current user
+	./installer.sh --system --uninstall  # Remove all configured applications for the entire system'
 	exit
 }
 
@@ -41,7 +43,7 @@ function waFindInstalled() {
 		done;
 		echo "powershell.exe -ExecutionPolicy Bypass -File \\\\tsclient\\home\\.local\\share\\winapps\\ExtractPrograms.ps1 > \\\\tsclient\home\\.local\\share\\winapps\\detected" >> ${HOME}/.local/share/winapps/installed.bat
 		echo "RENAME \\\\tsclient\\home\\.local\\share\\winapps\\installed.tmp installed" >> ${HOME}/.local/share/winapps/installed.bat
-		xfreerdp /d:"${RDP_DOMAIN}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} +auto-reconnect +home-drive -wallpaper /span /wm-class:"RDPInstaller" /app:"C:\Windows\System32\cmd.exe" /app-icon:"${DIR}/../icons/windows.svg" /app-cmd:"/C \\\\tsclient\\home\\.local\\share\\winapps\\installed.bat" 1> /dev/null 2>&1 &
+		xfreerdp /d:"${RDP_DOMAIN:-}" /u:"${RDP_USER}" /p:"${RDP_PASS}" /v:${RDP_IP} +auto-reconnect +home-drive -wallpaper /span /wm-class:"RDPInstaller" /app:"C:\Windows\System32\cmd.exe" /app-icon:"${DIR}/../icons/windows.svg" /app-cmd:"/C \\\\tsclient\\home\\.local\\share\\winapps\\installed.bat" 1> /dev/null 2>&1 &
 		COUNT=0
 		while [ ! -f "${HOME}/.local/share/winapps/installed" ]; do
 			sleep 5
@@ -118,7 +120,7 @@ function waConfigureApps() {
 			APP="${APP%%)}"
 			echo "${APP}" >> "${HOME}/.local/share/winapps/installed"
 		done
-	fi	
+	fi
 	${SUDO} cp "${DIR}/bin/winapps" "${BIN_PATH}/winapps"
 	COUNT=0
 	if [ "${APP_INSTALL}" != "Do not set up any pre-configured applications" ]; then
@@ -267,12 +269,12 @@ function waUninstallSystem() {
 	done
 }
 
-if [ -z "${1}" ]; then
+if [ -z "${1:-}" ]; then
 	OPTIONS=(User System)
 	menuFromArr INSTALL_TYPE "Would you like to install for the current user or the whole system?" "${OPTIONS[@]}"
-elif [ "${1}" = '--user' ]; then
+elif [ "${1:-}" = '--user' ]; then
 	INSTALL_TYPE='User'
-elif [ "${1}" = '--system' ]; then
+elif [ "${1:-}" = '--system' ]; then
 	INSTALL_TYPE='System'
 else
 	waUsage
@@ -283,7 +285,7 @@ if [ "${INSTALL_TYPE}" = 'User' ]; then
 	BIN_PATH="${HOME}/.local/bin"
 	APP_PATH="${HOME}/.local/share/applications"
 	SYS_PATH="${HOME}/.local/share/winapps"
-	if [ -n "${2}" ]; then
+	if [ -n "${2:-}" ]; then
 		if [ "${2}" = '--uninstall' ]; then
 			# Uninstall
 			echo "Uninstalling..."

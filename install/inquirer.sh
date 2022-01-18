@@ -97,7 +97,7 @@ on_keypress() {
   local OLD_IFS
   local IFS
   local key
-  OLD_IFS=$IFS
+  OLD_IFS=${IFS:-}
   local on_up=${1:-on_default}
   local on_down=${2:-on_default}
   local on_space=${3:-on_default}
@@ -365,7 +365,7 @@ on_checkbox_input_down() {
 on_checkbox_input_enter() {
   remove_checkbox_instructions
   local OLD_IFS
-  OLD_IFS=$IFS
+  OLD_IFS=${IFS:-}
   _checkbox_selected_indices=()
   _checkbox_selected_options=()
   IFS=$'\n'
@@ -461,7 +461,7 @@ _checkbox_input() {
     _checkbox_selected[$i]=false
   done
 
-  if [ -n "$3" ]; then
+  if [ -n "${3:-}" ]; then
     eval _selected_indices=( '"${'${3}'[@]}"' )
     for i in ${_selected_indices[@]}; do
       _checkbox_selected[$i]=true
@@ -581,7 +581,7 @@ on_list_input_down() {
 
 on_list_input_enter_space() {
   local OLD_IFS
-  OLD_IFS=$IFS
+  OLD_IFS=${IFS:-}
   IFS=$'\n'
 
   tput cud $((${#_list_options[@]}-${_list_selected_index}))
